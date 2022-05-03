@@ -1,0 +1,16 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "docker-compose: down",
+      "type": "shell",
+      "command": "docker compose down --remove-orphans"
+    },
+    {
+      "label": "docker-compose: up",
+      "type": "shell",
+      "dependsOn": ["docker-compose: down"],
+      "command": "docker compose up -d --no-build app"
+    }
+  ]
+}
