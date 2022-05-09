@@ -3,6 +3,7 @@ from urllib import request
 import ssl
 import collections
 from dateutil.parser import parse
+from xmltodict import unparse
 
 from logging import getLogger
 
@@ -28,6 +29,10 @@ def envidat_to_opendataswiss_converter(package_list_url):
     # Assign package_list API JSON data to Python dictionary
     with request.urlopen(package_list_url) as metadata:
         package_list = json.load(metadata)
+
+    # TEST
+    # root element
+    metadata_dict = collections.OrderedDict()
 
     # Convert each record in package_list to XML format
     for package in package_list['result']:
@@ -124,7 +129,20 @@ def envidat_to_opendataswiss_converter(package_list_url):
         # Distribution - iterate through package resources (MANDATORY) and obtain package license
         # Call get_distribution_list(package) to get distibution list
         md_metadata_dict['dcat:Dataset']['dcat:distribution'] = get_distribution_list(package, package_url)
-      
+        # print(md_metadata_dict['dcat:Dataset']['dcat:distribution'])
+
+        # TEST
+        metadata_dict.update(md_metadata_dict)
+
+    # root element
+    opendata_metadata_dict = collections.OrderedDict()
+    opendata_metadata_dict['rdf:RDF'] = metadata_dict
+
+    # Convert metadata to xml
+    metadata_xml = unparse(opendata_metadata_dict, short_empty_elements=True, pretty=True)
+
+    return metadata_xml
+
 
 # ======================================= Distribution List Function ==================================================
 
@@ -150,6 +168,7 @@ def get_distribution_list(package, package_url):
         resource_id = resource.get('id')
         resource_name = resource.get('name', resource_id)
         resource_notes = clean_text(resource.get('description', 'No description'))
+        # TODO fix resource_page_url
         resource_page_url = package_url + '/resource/' + resource.get('id', '')
         # resource_url = protocol + '://' + host + toolkit.url_for(controller='resource', action='read',
         #                                                          id=package.get('id', ''),
@@ -186,6 +205,8 @@ def get_distribution_list(package, package_url):
 
         resource_format = resource.get('format')
 
+        # TODO fix resource_page_url
+        # TODO fix resource_url
         distribution = {'dcat:Distribution':
                         {'@rdf:about': resource_page_url,
                          'dct:identifier': package['name'] + '.' + resource_id,
@@ -243,4 +264,4 @@ def get_keywords(package):
 # ========================================== TESTING ===========================================================
 
 # envidat_to_opendataswiss_converter("https://www.envidat.ch/api/action/package_show?id=d6939be3-ed78-4714-890d-d974ae2e58be")
-envidat_to_opendataswiss_converter("https://www.envidat.ch/api/action/current_package_list_with_resources?limit=2")
+print(envidat_to_opendataswiss_converter("https://www.envidat.ch/api/action/current_package_list_with_resources?limit=2"))
