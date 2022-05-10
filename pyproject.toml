@@ -4,7 +4,7 @@ version = "0.1.0"
 description = ""
 authors = [
     {name = "Sam Woodcock", email = "samuel.woodcock@wsl.ch"},
-    {name= "Rebecca Kurup Buchholz"}
+    {name= "Rebecca Kurup Buchholz", email = "None"}
 ]
 dependencies = [
     "s3-bucket>=1.4.0",

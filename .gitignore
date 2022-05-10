@@ -1,2 +1,4 @@
 **/*.secret
-__pypackages__
+.pdm.toml
+pdm.lock
+__pypackages__/
