@@ -37,17 +37,17 @@ def envidat_to_opendataswiss_converter(package_list_url):
 
     # TEST
     result = packages['result']
-    print(len(result))
+    # print(len(result))
     # print(result)
     # TODO determine if it actually necessary to have packages in alpabetical order by name
     # Sort result list of package dictionaries by name of each package
     sorted_result = sorted(result, key=lambda x: x['name'], reverse=False)
 
     # TEST
-    print(len(sorted_result))
+    # print(len(sorted_result))
     # print('')
-    for item in sorted_result:
-        print(item['name'])
+    # for item in sorted_result:
+    #     print(item['name'])
 
     # Try to convert packages to dictionaries compatible with OpenDataSwiss format
     try:
