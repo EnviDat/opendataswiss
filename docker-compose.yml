@@ -20,7 +20,7 @@ services:
     volumes:
       - .:/opt/app:ro
     env_file:
-      - .app.secret
+      - .env.secret
     networks:
       - traefik-proxy
     restart: unless-stopped

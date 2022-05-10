@@ -5,6 +5,7 @@ import requests
 
 from io import BytesIO
 from textwrap import dedent
+from pathlib import Path
 
 # from utils.s3 import (
 #     get_s3_connection,
@@ -15,6 +16,23 @@ from textwrap import dedent
 
 
 log = logging.getLogger(__name__)
+
+
+def debugger_is_active() -> bool:
+    "Check to see if running in debug mode."
+
+    gettrace = getattr(sys, "gettrace", lambda: None)
+    return gettrace() is not None
+
+
+def _load_debug_dotenv():
+    "Load .env.secret variables from repo for debugging."
+
+    from dotenv import load_dotenv
+
+    secret_env = Path(".env.secret")
+    if secret_env.is_file():
+        load_dotenv(secret_env)
 
 
 def _get_url(url: str) -> requests.Response:
@@ -42,7 +60,7 @@ def _get_url(url: str) -> requests.Response:
     return None
 
 
-def get_logger() -> logging.basicConfig:
+def _get_logger() -> logging.basicConfig:
     "Set logger parameters with log level from environment."
 
     logging.basicConfig(
@@ -140,7 +158,9 @@ def generate_index_html(package_names: list) -> BytesIO:
 def main():
     "Main script logic."
 
-    get_logger()
+    if debugger_is_active():
+        _load_debug_dotenv()
+    _get_logger()
 
     # s3_client = get_s3_connection()
     # bucket = create_s3_bucket(s3_client, public=True)
