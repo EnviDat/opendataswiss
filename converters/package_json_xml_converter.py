@@ -316,4 +316,4 @@ def get_keywords(package):
 
 # ========================================== TESTING ===========================================================
 
-envidat_to_opendataswiss_converter("https://www.envidat.ch/api/action/current_package_list_with_resources?limit=100000")
+# envidat_to_opendataswiss_converter("https://www.envidat.ch/api/action/current_package_list_with_resources?limit=100000")
