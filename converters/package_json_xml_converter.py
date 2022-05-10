@@ -12,6 +12,9 @@ log = getLogger(__name__)
 
 # ============================================ MAIN CONVERTER FUNCTION ================================================
 
+# TODO output XML currently returns data in order from most recently modified
+# TODO check if this acceptable as current ckan output outputs data in alphabetical order by dataset name
+
 # WARNING: Converter valid only for metadata schema of EnviDat!
 def envidat_to_opendataswiss_converter(package_list_url):
     """
@@ -32,14 +35,28 @@ def envidat_to_opendataswiss_converter(package_list_url):
     # Assign converted_packages list to store ordered dictionaries for all packages in packages
     converted_packages = []
 
+    # TODO remove package counter code
+    # TEST initalize package counter
+    package_count = 0
+
     # Try to convert packages to dictionaries compatible with OpenDataSwiss format
     try:
         # Iterate though packages
         for package in packages['result']:
+
+            # TEST increment package counter
+            package_count += 1
+
             # Convert each package (metadata record) in package_list to XML format
             package_dict = get_opendataswiss_ordered_dict(package)
             if package_dict:
                 converted_packages += [package_dict]
+            else:
+                log.error(f'ERROR: Failed to convert {package}')
+
+        # TEST print package count
+        print(package_count)
+
     except Exception as e:
         log.error(f'ERROR: Cannot convert to OpenDataSwiss format, Exeption: {e}')
 
@@ -47,99 +64,110 @@ def envidat_to_opendataswiss_converter(package_list_url):
     wrapper_dict = get_wrapper_dict(converted_packages)
 
     # Convert wrapper_dict to XML format
-    catalog_converted = unparse(wrapper_dict, short_empty_elements=True, pretty=True)
+    converted_data_xml = unparse(wrapper_dict, short_empty_elements=True, pretty=True)
 
-    # return make_response(catalog_converted, 200, headers)
+    # TODO block that writes XML data
+    # TEST
+    with open('test.xml', 'w', encoding="utf-8") as xml_file:
+        xml_file.write(converted_data_xml)
 
-    return catalog_converted
+    return converted_data_xml
 
 
 # ======================================= Format Converter Function ==================================================
 
 # TODO check which tags are mandatory
 # Returns OpenDataSwiss format OrderedDict created from EnviDat format metadata JSON package
+# If conversion is not successful returns None
 def get_opendataswiss_ordered_dict(package):
-    md_metadata_dict = collections.OrderedDict()
 
-    # Dataset URL
-    package_name = package['name']
-    package_url = f'https://www.envidat.ch/#/metadata/{package_name}'
-    md_metadata_dict['dcat:Dataset'] = {'@rdf:about': package_url}
+    try:
 
-    # identifier
-    package_id = package['id']
-    md_metadata_dict['dcat:Dataset']['dct:identifier'] = f'{package_id}@envidat'
+        md_metadata_dict = collections.OrderedDict()
 
-    # title
-    title = package['title']
-    md_metadata_dict['dcat:Dataset']['dct:title'] = {'@xml:lang': "en", '#text': title}
+        # Dataset URL
+        package_name = package['name']
+        package_url = f'https://www.envidat.ch/#/metadata/{package_name}'
+        md_metadata_dict['dcat:Dataset'] = {'@rdf:about': package_url}
 
-    # description
-    description = clean_text(package.get('notes', ''))
-    md_metadata_dict['dcat:Dataset']['dct:description'] = {'@xml:lang': "en", '#text': description}
+        # identifier
+        package_id = package['id']
+        md_metadata_dict['dcat:Dataset']['dct:identifier'] = f'{package_id}@envidat'
 
-    # issued
-    creation_date = package.get('metadata_created')
-    if creation_date:
-        md_metadata_dict['dcat:Dataset']['dct:issued'] = {
-            '@rdf:datatype': "http://www.w3.org/2001/XMLSchema#dateTime",
-            '#text': parse(creation_date).strftime("%Y-%m-%dT%H:%M:%SZ")
-        }
+        # title
+        title = package['title']
+        md_metadata_dict['dcat:Dataset']['dct:title'] = {'@xml:lang': "en", '#text': title}
 
-    # modified
-    modification_date = package.get('metadata_modified', creation_date)
-    if modification_date:
-        md_metadata_dict['dcat:Dataset']['dct:modified'] = {
-            '@rdf:datatype': "http://www.w3.org/2001/XMLSchema#dateTime",
-            '#text': parse(modification_date).strftime("%Y-%m-%dT%H:%M:%SZ")
-        }
+        # description
+        description = clean_text(package.get('notes', ''))
+        md_metadata_dict['dcat:Dataset']['dct:description'] = {'@xml:lang': "en", '#text': description}
 
-    # publication (MANDATORY)
-    publisher_name = json.loads(package.get('publication', '{}')).get('publisher', '')
-    md_metadata_dict['dcat:Dataset']['dct:publisher'] = {'rdf:Description': {'rdfs:label': publisher_name}}
+        # issued
+        creation_date = package.get('metadata_created')
+        if creation_date:
+            md_metadata_dict['dcat:Dataset']['dct:issued'] = {
+                '@rdf:datatype': "http://www.w3.org/2001/XMLSchema#dateTime",
+                '#text': parse(creation_date).strftime("%Y-%m-%dT%H:%M:%SZ")
+            }
 
-    # contact point (MANDATORY)
-    maintainer = json.loads(package.get('maintainer', '{}'))
-    maintainer_name = ""
+        # modified
+        modification_date = package.get('metadata_modified', creation_date)
+        if modification_date:
+            md_metadata_dict['dcat:Dataset']['dct:modified'] = {
+                '@rdf:datatype': "http://www.w3.org/2001/XMLSchema#dateTime",
+                '#text': parse(modification_date).strftime("%Y-%m-%dT%H:%M:%SZ")
+            }
 
-    if maintainer.get('given_name'):
-        maintainer_name += maintainer['given_name'].strip() + ' '
+        # publication (MANDATORY)
+        publisher_name = json.loads(package.get('publication', '{}')).get('publisher', '')
+        md_metadata_dict['dcat:Dataset']['dct:publisher'] = {'rdf:Description': {'rdfs:label': publisher_name}}
 
-    maintainer_name += maintainer['name']
-    maintainer_email = "mailto:" + maintainer['email']
-    individual_contact_point = {'vcard:Individual': {'vcard:fn': maintainer_name,
-                                                     'vcard:hasEmail': {'@rdf:resource': maintainer_email}}}
+        # contact point (MANDATORY)
+        maintainer = json.loads(package.get('maintainer', '{}'))
+        maintainer_name = ""
 
-    if maintainer_email == 'mailto:envidat@wsl.ch':
-        md_metadata_dict['dcat:Dataset']['dcat:contactPoint'] = [individual_contact_point]
-    else:
-        organization_contact_point = {'vcard:Organization': {'vcard:fn': 'EnviDat Support',
-                                                             'vcard:hasEmail': {
-                                                                 '@rdf:resource': 'mailto:envidat@wsl.ch'}}}
-        md_metadata_dict['dcat:Dataset']['dcat:contactPoint'] = [individual_contact_point,
-                                                                 organization_contact_point]
+        if maintainer.get('given_name'):
+            maintainer_name += maintainer['given_name'].strip() + ' '
 
-    # theme (MANDATORY)
-    md_metadata_dict['dcat:Dataset']['dcat:theme'] = {'@rdf:resource': "http://opendata.swiss/themes/education"}
+        maintainer_name += maintainer['name']
+        maintainer_email = "mailto:" + maintainer['email']
+        individual_contact_point = {'vcard:Individual': {'vcard:fn': maintainer_name,
+                                                         'vcard:hasEmail': {'@rdf:resource': maintainer_email}}}
 
-    # language
-    md_metadata_dict['dcat:Dataset']['dct:language'] = {'#text': 'en'}
+        if maintainer_email == 'mailto:envidat@wsl.ch':
+            md_metadata_dict['dcat:Dataset']['dcat:contactPoint'] = [individual_contact_point]
+        else:
+            organization_contact_point = {'vcard:Organization': {'vcard:fn': 'EnviDat Support',
+                                                                 'vcard:hasEmail': {
+                                                                     '@rdf:resource': 'mailto:envidat@wsl.ch'}}}
+            md_metadata_dict['dcat:Dataset']['dcat:contactPoint'] = [individual_contact_point,
+                                                                     organization_contact_point]
 
-    # keyword
-    keywords_list = []
-    keywords = get_keywords(package)
-    for keyword in keywords:
-        keywords_list += [{'@xml:lang': "en", '#text': keyword}]
-    md_metadata_dict['dcat:Dataset']['dcat:keyword'] = keywords_list
+        # theme (MANDATORY)
+        md_metadata_dict['dcat:Dataset']['dcat:theme'] = {'@rdf:resource': "http://opendata.swiss/themes/education"}
 
-    # landing page
-    md_metadata_dict['dcat:Dataset']['dcat:landingPage'] = package_url
+        # language
+        md_metadata_dict['dcat:Dataset']['dct:language'] = {'#text': 'en'}
 
-    # Distribution - iterate through package resources (MANDATORY) and obtain package license
-    # Call get_distribution_list(package) to get distibution list
-    md_metadata_dict['dcat:Dataset']['dcat:distribution'] = get_distribution_list(package, package_name)
+        # keyword
+        keywords_list = []
+        keywords = get_keywords(package)
+        for keyword in keywords:
+            keywords_list += [{'@xml:lang': "en", '#text': keyword}]
+        md_metadata_dict['dcat:Dataset']['dcat:keyword'] = keywords_list
 
-    return md_metadata_dict
+        # landing page
+        md_metadata_dict['dcat:Dataset']['dcat:landingPage'] = package_url
+
+        # Distribution - iterate through package resources (MANDATORY) and obtain package license
+        # Call get_distribution_list(package) to get distibution list
+        md_metadata_dict['dcat:Dataset']['dcat:distribution'] = get_distribution_list(package, package_name)
+
+        return md_metadata_dict
+
+    except Exception as e:
+        log.error(f'ERROR: Cannot convert {package} to OpenDataSwiss format, Exeption: {e}')
+        return None
 
 
 # ======================================= Distribution List Function ==================================================
@@ -266,8 +294,9 @@ def clean_text(text):
         .replace('# ', ' ') \
         .replace('__', '') \
         .replace('  ', ' ') \
-        .replace('\r', '\n'). \
-        replace('\n\n', '\n')
+        .replace('\r', '\n') \
+        .replace('\r\n', '\n') \
+        .replace('\n\n', '\n')
     return cleaned_text
 
 
@@ -281,7 +310,4 @@ def get_keywords(package):
 
 # ========================================== TESTING ===========================================================
 
-# envidat_to_opendataswiss_converter("https://www.envidat.ch/api/action/package_show?id=d6939be3-ed78-4714-890d-d974ae2e58be")
-# print(
-#  envidat_to_opendataswiss_converter("https://www.envidat.ch/api/action/current_package_list_with_resources?limit=3"))
-# envidat_to_opendataswiss_converter("https://www.envidat.ch/api/action/current_package_list_with_resources?limit=2")
+# envidat_to_opendataswiss_converter("https://www.envidat.ch/api/action/current_package_list_with_resources?limit=100000")
