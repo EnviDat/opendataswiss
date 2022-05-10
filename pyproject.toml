@@ -4,6 +4,7 @@ version = "0.1.0"
 description = ""
 authors = [
     {name = "Sam Woodcock", email = "samuel.woodcock@wsl.ch"},
+    {name= "Rebecca Kurup Buchholz"}
 ]
 dependencies = ["boto3==1.21.23", "requests==2.27.1"]
 requires-python = ">=3.9"

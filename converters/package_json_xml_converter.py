@@ -28,30 +28,21 @@ def envidat_to_opendataswiss_converter(package_list_url):
     with request.urlopen(package_list_url) as metadata:
         packages = json.load(metadata)
 
-    # Assign metadata_dict to store ordered dictionaries for all packages in package_list
-    # package_list_dict = collections.OrderedDict()
-    # TEST
-    # package_list_dict = {}
+    # Assign converted_packages list to store ordered dictionaries for all packages in packages
     converted_packages = []
 
+    # Try to convert packages to dictionaries compatible with OpenDataSwiss format
     try:
-
         # Iterate though packages
         for package in packages['result']:
-
             # Convert each package (metadata record) in package_list to XML format
             package_dict = get_opendataswiss_ordered_dict(package)
-
-            # print(package_dict)
-
             if package_dict:
-                # converted_packages += [{'dcat:dataset': package_dict}]
                 converted_packages += [package_dict]
-                # print(len(converted_packages))
-
     except Exception as e:
         log.error(f'ERROR: Cannot convert to OpenDataSwiss format, Exeption: {e}')
 
+    # Assign catalog_dict for header and converted_packages
     catalog_dict = collections.OrderedDict()
 
     # header
@@ -68,65 +59,16 @@ def envidat_to_opendataswiss_converter(package_list_url):
 
     catalog_dict['dcat:Catalog'] = {'dcat:dataset': converted_packages}
 
+    # Assign dcat_catalog_dict dictionary for room element in XML file
     dcat_catalog_dict = collections.OrderedDict()
     dcat_catalog_dict['rdf:RDF'] = catalog_dict
 
+    # Convert dcat_catalog_dict to XML format
     catalog_converted = unparse(dcat_catalog_dict, short_empty_elements=True, pretty=True)
 
     # return make_response(catalog_converted, 200, headers)
 
     return catalog_converted
-
-    # Iterate though packages
-    # for package in packages['result']:
-    #     # Convert each package (metadata record) in package_list to XML format
-    #     package_dict = get_opendataswiss_ordered_dict(package)
-    #
-    #     print(package_dict)
-    #
-    #     # Update package_list_dict with package (metadata record) in OpenDataSwiss format ordered dictionary
-    #     package_list_dict.update(package_dict)
-    #
-    #     print(package_list_dict)
-
-    # root element
-    # opendata_metadata_dict = collections.OrderedDict()
-    # opendata_metadata_dict['rdf:RDF'] = converted_packages
-
-    # Convert metadata to xml
-    # metadata_xml = unparse(opendata_metadata_dict, short_empty_elements=True, pretty=True)
-    #
-    # return metadata_xml
-
-
-    # # Assign metadata_dict to store ordered dictionaries for all packages in package_list
-    # # package_list_dict = collections.OrderedDict()
-    # # TEST
-    # # package_list_dict = {}
-    # package_list = []
-    #
-    # # Iterate though packages
-    # for package in packages['result']:
-    #
-    #     # Convert each package (metadata record) in package_list to XML format
-    #     package_dict = get_opendataswiss_ordered_dict(package)
-    #
-    #     print(package_dict)
-    #
-    #     # Update package_list_dict with package (metadata record) in OpenDataSwiss format ordered dictionary
-    #     package_list_dict.update(package_dict)
-    #
-    #     print(package_list_dict)
-    #
-    # # root element
-    # opendata_metadata_dict = collections.OrderedDict()
-    # opendata_metadata_dict['rdf:RDF'] = package_list_dict
-    #
-    # # Convert metadata to xml
-    # metadata_xml = unparse(opendata_metadata_dict, short_empty_elements=True, pretty=True)
-    #
-    # return metadata_xml
-
 
 # ======================================= Format Converter Function ==================================================
 
@@ -135,18 +77,6 @@ def envidat_to_opendataswiss_converter(package_list_url):
 def get_opendataswiss_ordered_dict(package):
 
     md_metadata_dict = collections.OrderedDict()
-
-    # Header
-    # md_metadata_dict['@xmlns:dct'] = "http://purl.org/dc/terms/"
-    # md_metadata_dict['@xmlns:dc'] = "http://purl.org/dc/elements/1.1/"
-    # md_metadata_dict['@xmlns:dcat'] = "http://www.w3.org/ns/dcat#"
-    # md_metadata_dict['@xmlns:foaf'] = "http://xmlns.com/foaf/0.1/"
-    # md_metadata_dict['@xmlns:xsd'] = "http://www.w3.org/2001/XMLSchema#"
-    # md_metadata_dict['@xmlns:rdfs'] = "http://www.w3.org/2000/01/rdf-schema#"
-    # md_metadata_dict['@xmlns:rdf'] = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-    # md_metadata_dict['@xmlns:vcard'] = "http://www.w3.org/2006/vcard/ns#"
-    # md_metadata_dict['@xmlns:odrs'] = "http://schema.theodi.org/odrs#"
-    # md_metadata_dict['@xmlns:schema'] = "http://schema.org/"
 
     # Dataset URL
     package_name = package['name']
@@ -351,6 +281,6 @@ def get_keywords(package):
 # ========================================== TESTING ===========================================================
 
 # envidat_to_opendataswiss_converter("https://www.envidat.ch/api/action/package_show?id=d6939be3-ed78-4714-890d-d974ae2e58be")
-print(envidat_to_opendataswiss_converter("https://www.envidat.ch/api/action/current_package_list_with_resources?limit=1"))
-# envidat_to_opendataswiss_converter("https://www.envidat.ch/api/action/current_package_list_with_resources?limit=1")
+# print(envidat_to_opendataswiss_converter("https://www.envidat.ch/api/action/current_package_list_with_resources?limit=3"))
+# envidat_to_opendataswiss_converter("https://www.envidat.ch/api/action/current_package_list_with_resources?limit=2")
 
