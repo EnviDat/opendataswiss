@@ -59,7 +59,6 @@ def envidat_to_opendataswiss_converter(package_list_url):
 # TODO check which tags are mandatory
 # Returns OpenDataSwiss format OrderedDict created from EnviDat format metadata JSON package
 def get_opendataswiss_ordered_dict(package):
-
     md_metadata_dict = collections.OrderedDict()
 
     # Dataset URL
@@ -147,7 +146,6 @@ def get_opendataswiss_ordered_dict(package):
 
 # Returns distribution_list created from package resources list and license_id
 def get_distribution_list(package, package_name):
-
     distribution_list = []
 
     dataset_license = package.get('license_id', 'odc-odbl')
@@ -168,7 +166,7 @@ def get_distribution_list(package, package_name):
         resource_name = resource.get('name', resource_id)
         resource_notes = clean_text(resource.get('description', 'No description'))
         resource_page_url = f'https://www.envidat.ch/dataset/{package_name}/resource/' + resource.get('id', '')
-        # TODO check resource_url is correct
+        # TODO check resource_url is acceptable
         resource_url = resource.get('url')
 
         resource_creation = parse(resource['created']).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -200,22 +198,21 @@ def get_distribution_list(package, package_name):
 
         resource_format = resource.get('format')
 
-        # TODO fix resource_url
         distribution = {'dcat:Distribution':
-                        {'@rdf:about': resource_page_url,
-                         'dct:identifier': package['name'] + '.' + resource_id,
-                         'dct:title': {'@xml:lang': "en", '#text': resource_name},
-                         'dct:description': {'@xml:lang': "en", '#text': resource_notes},
-                         'dct:issued': {'@rdf:datatype': "http://www.w3.org/2001/XMLSchema#dateTime",
-                                        '#text': resource_creation},
-                         'dct:modified': {'@rdf:datatype': "http://www.w3.org/2001/XMLSchema#dateTime",
-                                          '#text': resource_modification},
-                         'dct:language': 'en',
-                         'dcat:accessURL': {'@rdf:datatype': "http://www.w3.org/2001/XMLSchema#anyURI",
-                                            '#text': resource_url},
-                         'dct:rights': resource_license,
-                         'dcat:byteSize': resource_size
-                         }
+                            {'@rdf:about': resource_page_url,
+                             'dct:identifier': package['name'] + '.' + resource_id,
+                             'dct:title': {'@xml:lang': "en", '#text': resource_name},
+                             'dct:description': {'@xml:lang': "en", '#text': resource_notes},
+                             'dct:issued': {'@rdf:datatype': "http://www.w3.org/2001/XMLSchema#dateTime",
+                                            '#text': resource_creation},
+                             'dct:modified': {'@rdf:datatype': "http://www.w3.org/2001/XMLSchema#dateTime",
+                                              '#text': resource_modification},
+                             'dct:language': 'en',
+                             'dcat:accessURL': {'@rdf:datatype': "http://www.w3.org/2001/XMLSchema#anyURI",
+                                                '#text': resource_url},
+                             'dct:rights': resource_license,
+                             'dcat:byteSize': resource_size
+                             }
                         }
         # mediaType
         if resource_mimetype:
@@ -234,7 +231,6 @@ def get_distribution_list(package, package_name):
 
 # Returns wrapper dictionary (with catalog and root tags) for converted packages
 def get_wrapper_dict(converted_packages):
-
     # Assign catalog_dict for header and converted_packages
     catalog_dict = collections.OrderedDict()
 
@@ -283,10 +279,9 @@ def get_keywords(package):
         keywords += [name]
     return keywords
 
-
 # ========================================== TESTING ===========================================================
 
 # envidat_to_opendataswiss_converter("https://www.envidat.ch/api/action/package_show?id=d6939be3-ed78-4714-890d-d974ae2e58be")
-print(
-    envidat_to_opendataswiss_converter("https://www.envidat.ch/api/action/current_package_list_with_resources?limit=3"))
+# print(
+#  envidat_to_opendataswiss_converter("https://www.envidat.ch/api/action/current_package_list_with_resources?limit=3"))
 # envidat_to_opendataswiss_converter("https://www.envidat.ch/api/action/current_package_list_with_resources?limit=2")
