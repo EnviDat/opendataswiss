@@ -8,22 +8,31 @@ Code to make EnviDat data accessible via OpenDataSwiss scrapers.
 
 ## Development
 
+1. Create .env.secret:
+
+```env
+LOG_LEVEL=DEBUG
+AWS_ENDPOINT=xxx
+AWS_REGION=xxx
+AWS_ACCESS_KEY=xxx
+AWS_SECRET_KEY=xxx
+AWS_BUCKET_NAME=xxx
+BACKEND_PACKAGE_URL=xxx
+```
+
+2a. Local Debug
+
+- Install `pdm` and enable pep582 support `pdm --pep582`.
+- Install project dependencies `pdm install`
+- Run with IDE debugger
+
+2b. Remote Debug
+
 - Build the debug image:
   `docker compose build`
-
-- Create .app.secret:
-
-  ```env
-  LOG_LEVEL=DEBUG
-  AWS_ENDPOINT=xxx
-  AWS_REGION=xxx
-  AWS_ACCESS_KEY=xxx
-  AWS_SECRET_KEY=xxx
-  AWS_BUCKET_NAME=xxx
-  BACKEND_PACKAGE_URL=xxx
-  ```
-
-- Run via VSCode debug menu.
+- Start the container:
+  `docker compose up -d`
+- Run remote debugging via IDE (VSCode) debug menu.
 
 ## Production
 
