@@ -10,14 +10,15 @@ from logging import getLogger
 log = getLogger(__name__)
 
 
+# ============================================ MAIN CONVERTER FUNCTION ================================================
+
 # WARNING: Converter valid only for metadata schema of EnviDat!
 def envidat_to_opendataswiss_converter(package_list_url):
     """
     Converts JSON data to XML format
 
     :param package_list_url: API URL that has EnviDat metadata records data in JSON format
-    Package list URL: https://www.envidat.ch/api/action/current_package_list_with_resources
-    testing with https://www.envidat.ch/api/action/package_show?id=d6939be3-ed78-4714-890d-d974ae2e58be
+        Package list URL (May 2022): https://www.envidat.ch/api/action/current_package_list_with_resources
     :return: XML file in OpenDataSwiss format like this https://www.envidat.ch/opendata/export/dcat-ap-ch.xml
     """
 
@@ -42,29 +43,11 @@ def envidat_to_opendataswiss_converter(package_list_url):
     except Exception as e:
         log.error(f'ERROR: Cannot convert to OpenDataSwiss format, Exeption: {e}')
 
-    # Assign catalog_dict for header and converted_packages
-    catalog_dict = collections.OrderedDict()
+    # Wrap converted_packages into wrapper dictionary with catalog and root tags
+    wrapper_dict = get_wrapper_dict(converted_packages)
 
-    # header
-    catalog_dict['@xmlns:dct'] = "http://purl.org/dc/terms/"
-    catalog_dict['@xmlns:dc'] = "http://purl.org/dc/elements/1.1/"
-    catalog_dict['@xmlns:dcat'] = "http://www.w3.org/ns/dcat#"
-    catalog_dict['@xmlns:foaf'] = "http://xmlns.com/foaf/0.1/"
-    catalog_dict['@xmlns:xsd'] = "http://www.w3.org/2001/XMLSchema#"
-    catalog_dict['@xmlns:rdfs'] = "http://www.w3.org/2000/01/rdf-schema#"
-    catalog_dict['@xmlns:rdf'] = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-    catalog_dict['@xmlns:vcard'] = "http://www.w3.org/2006/vcard/ns#"
-    catalog_dict['@xmlns:odrs'] = "http://schema.theodi.org/odrs#"
-    catalog_dict['@xmlns:schema'] = "http://schema.org/"
-
-    catalog_dict['dcat:Catalog'] = {'dcat:dataset': converted_packages}
-
-    # Assign dcat_catalog_dict dictionary for room element in XML file
-    dcat_catalog_dict = collections.OrderedDict()
-    dcat_catalog_dict['rdf:RDF'] = catalog_dict
-
-    # Convert dcat_catalog_dict to XML format
-    catalog_converted = unparse(dcat_catalog_dict, short_empty_elements=True, pretty=True)
+    # Convert wrapper_dict to XML format
+    catalog_converted = unparse(wrapper_dict, short_empty_elements=True, pretty=True)
 
     # return make_response(catalog_converted, 200, headers)
 
@@ -76,6 +59,7 @@ def envidat_to_opendataswiss_converter(package_list_url):
 # TODO check which tags are mandatory
 # Returns OpenDataSwiss format OrderedDict created from EnviDat format metadata JSON package
 def get_opendataswiss_ordered_dict(package):
+
     md_metadata_dict = collections.OrderedDict()
 
     # Dataset URL
@@ -155,7 +139,6 @@ def get_opendataswiss_ordered_dict(package):
     # Distribution - iterate through package resources (MANDATORY) and obtain package license
     # Call get_distribution_list(package) to get distibution list
     md_metadata_dict['dcat:Dataset']['dcat:distribution'] = get_distribution_list(package, package_name)
-    # print(md_metadata_dict['dcat:Dataset']['dcat:distribution'])
 
     return md_metadata_dict
 
@@ -164,6 +147,7 @@ def get_opendataswiss_ordered_dict(package):
 
 # Returns distribution_list created from package resources list and license_id
 def get_distribution_list(package, package_name):
+
     distribution_list = []
 
     dataset_license = package.get('license_id', 'odc-odbl')
@@ -244,6 +228,35 @@ def get_distribution_list(package, package_name):
         distribution_list += [distribution]
 
     return distribution_list
+
+
+# ======================================== Wrapper Dictionary Function ================================================
+
+# Returns wrapper dictionary (with catalog and root tags) for converted packages
+def get_wrapper_dict(converted_packages):
+
+    # Assign catalog_dict for header and converted_packages
+    catalog_dict = collections.OrderedDict()
+
+    # header
+    catalog_dict['@xmlns:dct'] = "http://purl.org/dc/terms/"
+    catalog_dict['@xmlns:dc'] = "http://purl.org/dc/elements/1.1/"
+    catalog_dict['@xmlns:dcat'] = "http://www.w3.org/ns/dcat#"
+    catalog_dict['@xmlns:foaf'] = "http://xmlns.com/foaf/0.1/"
+    catalog_dict['@xmlns:xsd'] = "http://www.w3.org/2001/XMLSchema#"
+    catalog_dict['@xmlns:rdfs'] = "http://www.w3.org/2000/01/rdf-schema#"
+    catalog_dict['@xmlns:rdf'] = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    catalog_dict['@xmlns:vcard'] = "http://www.w3.org/2006/vcard/ns#"
+    catalog_dict['@xmlns:odrs'] = "http://schema.theodi.org/odrs#"
+    catalog_dict['@xmlns:schema'] = "http://schema.org/"
+
+    catalog_dict['dcat:Catalog'] = {'dcat:dataset': converted_packages}
+
+    # Assign dcat_catalog_dict dictionary for root element in XML file
+    dcat_catalog_dict = collections.OrderedDict()
+    dcat_catalog_dict['rdf:RDF'] = catalog_dict
+
+    return dcat_catalog_dict
 
 
 # =============================================== Helper Functions=====================================================
