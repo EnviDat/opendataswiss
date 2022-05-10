@@ -35,17 +35,26 @@ def envidat_to_opendataswiss_converter(package_list_url):
     # Assign converted_packages list to store ordered dictionaries for all packages in packages
     converted_packages = []
 
-    # TODO remove package counter code
-    # TEST initalize package counter
-    package_count = 0
+    # TEST
+    result = packages['result']
+    print(len(result))
+    # print(result)
+    # TODO determine if it actually necessary to have packages in alpabetical order by name
+    # Sort result list of package dictionaries by name of each package
+    sorted_result = sorted(result, key=lambda x: x['name'], reverse=False)
+
+    # TEST
+    print(len(sorted_result))
+    # print('')
+    for item in sorted_result:
+        print(item['name'])
 
     # Try to convert packages to dictionaries compatible with OpenDataSwiss format
     try:
         # Iterate though packages
-        for package in packages['result']:
-
-            # TEST increment package counter
-            package_count += 1
+        # for package in packages['result']:
+        # TEST
+        for package in sorted_result:
 
             # Convert each package (metadata record) in package_list to XML format
             package_dict = get_opendataswiss_ordered_dict(package)
@@ -53,9 +62,6 @@ def envidat_to_opendataswiss_converter(package_list_url):
                 converted_packages += [package_dict]
             else:
                 log.error(f'ERROR: Failed to convert {package}')
-
-        # TEST print package count
-        print(package_count)
 
     except Exception as e:
         log.error(f'ERROR: Cannot convert to OpenDataSwiss format, Exeption: {e}')
@@ -295,8 +301,8 @@ def clean_text(text):
         .replace('__', '') \
         .replace('  ', ' ') \
         .replace('\r', '\n') \
-        .replace('\r\n', '\n') \
         .replace('\n\n', '\n')
+        # .replace('\r\n', '\n') \
     return cleaned_text
 
 
@@ -310,4 +316,4 @@ def get_keywords(package):
 
 # ========================================== TESTING ===========================================================
 
-# envidat_to_opendataswiss_converter("https://www.envidat.ch/api/action/current_package_list_with_resources?limit=100000")
+envidat_to_opendataswiss_converter("https://www.envidat.ch/api/action/current_package_list_with_resources?limit=100000")
