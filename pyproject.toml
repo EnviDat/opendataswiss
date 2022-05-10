@@ -6,7 +6,10 @@ authors = [
     {name = "Sam Woodcock", email = "samuel.woodcock@wsl.ch"},
     {name= "Rebecca Kurup Buchholz"}
 ]
-dependencies = ["boto3==1.21.23", "requests==2.27.1"]
+dependencies = [
+    "s3-bucket>=1.4.0",
+    "requests==2.27.1",
+]
 requires-python = ">=3.9"
 license = {text = "MIT"}
 
