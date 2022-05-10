@@ -21,7 +21,7 @@ def envidat_to_opendataswiss_converter(package_list_url):
     Converts JSON data to XML format
 
     :param package_list_url: API URL that has EnviDat metadata records data in JSON format
-        Package list URL (May 2022): https://www.envidat.ch/api/action/current_package_list_with_resources
+        Package list URL (May 2022): https://www.envidat.ch/api/action/current_package_list_with_resources?limit=100000
     :return: XML file in OpenDataSwiss format like this https://www.envidat.ch/opendata/export/dcat-ap-ch.xml
     """
 
