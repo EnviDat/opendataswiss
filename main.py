@@ -4,20 +4,19 @@ import logging
 import requests
 import json
 
-from typing import Optional
-from io import BytesIO
-from textwrap import dedent
+from typing import Optional, NoReturn
 from pathlib import Path
 from collections import OrderedDict
 from dateutil.parser import parse
 from xmltodict import unparse
 
-# from utils.s3 import (
-#     get_s3_connection,
-#     create_s3_bucket,
-#     set_s3_static_config,
-#     upload_to_s3_from_memory,
-# )
+from utils.s3 import (
+    get_s3_connection,
+    create_s3_bucket,
+    set_s3_static_config,
+    generate_index_html,
+    upload_to_s3_from_memory,
+)
 
 
 log = logging.getLogger(__name__)
@@ -30,7 +29,7 @@ def _debugger_is_active() -> bool:
     return gettrace() is not None
 
 
-def _load_debug_dotenv() -> None:
+def _load_debug_dotenv() -> NoReturn:
     "Load .env.secret variables from repo for debugging."
 
     from dotenv import load_dotenv
@@ -444,56 +443,6 @@ def get_opendataswiss_ordered_dict(package: dict) -> Optional[OrderedDict]:
         return None
 
 
-def generate_index_html(package_names: list) -> BytesIO:
-    "Write index.html to root of S3 bucket, with embedded S3 download links."
-
-    buf = BytesIO()
-
-    # Start HTML
-    html_block = dedent(
-        """
-        <html>
-        <head>
-        <meta charset="utf-8">
-        <title>EnviDat Metadata List</title>
-        </head>
-        <body>
-        """
-    ).strip()
-    log.debug(f"Writing start HTML block to buffer: {html_block}")
-    buf.write(html_block.encode("utf_8"))
-
-    # Packages
-    log.info("Iterating package list to write S3 links to index.")
-    for package_name in package_names:
-        log.debug(f"Package name: {package_name}")
-        html_block = dedent(
-            f"""
-            <div class='flex py-2 xs6'>
-            <a href='https://opendataswiss.s3-zh.os.switch.ch/{package_name}.xml'>
-                https://opendataswiss.s3-zh.os.switch.ch/{package_name}.xml
-            </a>
-            </div>"""
-        )
-        log.debug(f"Writing package link HTML to buffer: {html_block}")
-        buf.write(html_block.encode("utf_8"))
-
-    # Close
-    html_block = dedent(
-        """
-        </body>
-        </html>"""
-    )
-    log.debug(f"Writing end HTML block to buffer: {html_block}")
-    buf.write(html_block.encode("utf_8"))
-
-    # Reset read pointer.
-    # DOT NOT FORGET THIS, for reading afterwards!
-    buf.seek(0)
-
-    return buf
-
-
 def envidat_to_opendataswiss_converter() -> str:
     """
     Main converter function for OpenDataSwiss. JSON --> XML.
@@ -539,23 +488,19 @@ def main():
         _load_debug_dotenv()
     _get_logger()
 
-    os.environ["API_HOST"] = "https://www.envidat.ch"
-    xml = envidat_to_opendataswiss_converter()
-    log.info(xml)
+    xml_data = envidat_to_opendataswiss_converter()
+    xml_name = "envidat_export_opendataswiss.xml"
 
-    # s3_client = get_s3_connection()
-    # bucket = create_s3_bucket(s3_client, public=True)
-    # set_s3_static_config(s3_client)
+    s3_client = get_s3_connection()
+    bucket = create_s3_bucket(s3_client, public=True)
 
-    # log.debug(f"Attempting upload of {package_name}.xml to S3 bucket.")
-    # upload_status = upload_to_s3_from_memory(bucket, f"{package_name}.xml", data)
+    log.debug(f"Attempting upload of {xml_name} to S3 bucket.")
+    upload_to_s3_from_memory(bucket, xml_name, xml_data)
 
-    # # Create index.html
-    # index_html = generate_index_html(packages_in_ckan)
-    # log.info("Uploading generated index.html to S3 bucket.")
-    # bucket.upload_fileobj(
-    #     index_html, "index.html", ExtraArgs={"ContentType": "text/html"}
-    # )
+    set_s3_static_config(s3_client)
+    index_html = generate_index_html("OpenDataSwiss XML", xml_name)
+    log.debug("Attempting upload of index.html to S3 bucket.")
+    upload_to_s3_from_memory(bucket, "index.html", index_html, content_type="text/html")
 
     log.info("Done.")
 

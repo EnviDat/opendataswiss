@@ -12,12 +12,12 @@ Code to make EnviDat data accessible via OpenDataSwiss scrapers.
 
 ```env
 LOG_LEVEL=DEBUG
+API_URL=xxx
 AWS_ENDPOINT=xxx
 AWS_REGION=xxx
 AWS_ACCESS_KEY=xxx
 AWS_SECRET_KEY=xxx
 AWS_BUCKET_NAME=xxx
-BACKEND_PACKAGE_URL=xxx
 ```
 
 2a. Local Debug
