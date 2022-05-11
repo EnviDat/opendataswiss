@@ -1,4 +1,3 @@
 **/*.secret
 .pdm.toml
-pdm.lock
 __pypackages__/
