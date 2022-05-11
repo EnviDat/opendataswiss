@@ -48,7 +48,7 @@ RUN set -ex \
 WORKDIR /opt/python
 COPY pyproject.toml pdm.lock /opt/python/
 RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir pdm==1.14.1
+    && pip install --no-cache-dir pdm
 RUN pdm install --prod --no-lock --no-editable
 
 
@@ -80,17 +80,19 @@ RUN python -m pip install --no-cache-dir --upgrade pip \
     && useradd -r -u 900 -m -c "unprivileged account" -d /home/appuser -s /bin/false appuser \
     && chown -R appuser:appuser /opt
 
-ENTRYPOINT ["python"]
-USER appuser
-
 
 
 FROM runtime as debug
-RUN pip install --no-cache-dir debugpy
+COPY pyproject.toml pdm.lock /opt/python/
+RUN pip install --no-cache-dir debugpy pdm \
+    && pdm install --dev --no-lock --no-editable
+USER appuser
 ENTRYPOINT ["python", "-m", "debugpy", "--wait-for-client", "--listen", "0.0.0.0:5678"]
 CMD ["/opt/app/main.py"]
 
 
 
 FROM runtime as prod
+USER appuser
+ENTRYPOINT ["python"]
 CMD ["/opt/app/main.py"]
