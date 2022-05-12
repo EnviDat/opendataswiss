@@ -23,14 +23,14 @@ log = logging.getLogger(__name__)
 
 
 def _debugger_is_active() -> bool:
-    "Check to see if running in debug mode."
+    """Check to see if running in debug mode."""
 
     gettrace = getattr(sys, "gettrace", lambda: None)
     return gettrace() is not None
 
 
 def _load_debug_dotenv() -> NoReturn:
-    "Load .env.secret variables from repo for debugging."
+    """Load .env.secret variables from repo for debugging."""
 
     from dotenv import load_dotenv
 
@@ -40,7 +40,7 @@ def _load_debug_dotenv() -> NoReturn:
 
 
 def _get_logger() -> logging.basicConfig:
-    "Set logger parameters with log level from environment."
+    """Set logger parameters with log level from environment."""
 
     logging.basicConfig(
         level=os.getenv("LOG_LEVEL", default="DEBUG"),
@@ -54,7 +54,7 @@ def _get_logger() -> logging.basicConfig:
 
 
 def _clean_text(text: str) -> str:
-    "Returns text cleaned of hashes and with modified characters"
+    """Returns text cleaned of hashes and with modified characters"""
 
     cleaned_text = (
         text.replace("###", "")
@@ -66,12 +66,11 @@ def _clean_text(text: str) -> str:
         .replace("\r", "\n")
         .replace("\n\n", "\n")
     )
-    # .replace('\r\n', '\n') \
     return cleaned_text
 
 
 def _get_keywords(package: dict) -> list:
-    "Returns keywords from tags in package (metadata record)."
+    """Returns keywords from tags in package (metadata record)."""
 
     keywords = []
     for tag in package.get("tags", []):
@@ -81,7 +80,7 @@ def _get_keywords(package: dict) -> list:
 
 
 def _get_url(url: str) -> requests.Response:
-    "Helper wrapper to get a URL with additional error handling."
+    """Helper wrapper to get a URL with additional error handling."""
 
     try:
         log.debug(f"Attempting to get {url}")
@@ -137,9 +136,7 @@ def get_metadata_list(host: str = None, sort_result: bool = None) -> list:
     return package_names
 
 
-def get_metadata_list_with_resources(
-    host: str = None, sort_result: bool = None
-) -> list:
+def get_metadata_list_with_resources(host: str = None, sort_result: bool = None) -> list:
     """
     Get package/metadata list with associated resources from API.
     Host url as a parameter or from environment.
@@ -181,7 +178,7 @@ def get_metadata_list_with_resources(
 
 
 def get_distribution_list(package: dict, package_name: str) -> list:
-    "Return distribution_list created from package resources list and licence_id."
+    """Return distribution_list created from package resources list and licence_id."""
 
     distribution_list = []
 
@@ -211,7 +208,6 @@ def get_distribution_list(package: dict, package_name: str) -> list:
             f"https://www.envidat.ch/dataset/{package_name}/resource/"
             + resource.get("id", "")
         )
-        # TODO check resource_url is acceptable
         resource_url = resource.get("url")
 
         resource_creation = parse(resource["created"]).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -276,7 +272,7 @@ def get_distribution_list(package: dict, package_name: str) -> list:
                 "dct:language": "en",
                 "dcat:accessURL": {
                     "@rdf:datatype": "http://www.w3.org/2001/XMLSchema#anyURI",
-                    "#text": resource_url,
+                    "#text": resource_page_url,
                 },
                 "dct:rights": resource_license,
                 "dcat:byteSize": resource_size,
@@ -296,7 +292,7 @@ def get_distribution_list(package: dict, package_name: str) -> list:
 
 
 def get_wrapper_dict(converted_packages: list) -> dict:
-    "Returns wrapper dictionary (with catalog and root tags) for converted packages."
+    """Returns wrapper dictionary (with catalog and root tags) for converted packages."""
 
     # Assign catalog_dict for header and converted_packages
     catalog_dict = OrderedDict()
@@ -323,9 +319,7 @@ def get_wrapper_dict(converted_packages: list) -> dict:
 
 
 def get_opendataswiss_ordered_dict(package: dict) -> Optional[OrderedDict]:
-    "Return OpenDataSwiss formatted OrderedDict from EnviDat JSON."
-
-    # TODO check which tags are mandatory
+    """Return OpenDataSwiss formatted OrderedDict from EnviDat JSON."""
 
     try:
 
@@ -375,8 +369,12 @@ def get_opendataswiss_ordered_dict(package: dict) -> Optional[OrderedDict]:
             "publisher", ""
         )
         md_metadata_dict["dcat:Dataset"]["dct:publisher"] = {
-            "rdf:Description": {"rdfs:label": publisher_name}
+            "foaf:Organization": {"@rdf:about": "https://envidat.ch/#/about",
+                                  "foaf:name": publisher_name}
         }
+
+        # landing page
+        md_metadata_dict["dcat:Dataset"]["dcat:landingPage"] = {"@rdf:resource": package_url}
 
         # contact point (MANDATORY)
         maintainer = json.loads(package.get("maintainer", "{}"))
@@ -425,15 +423,9 @@ def get_opendataswiss_ordered_dict(package: dict) -> Optional[OrderedDict]:
             keywords_list += [{"@xml:lang": "en", "#text": keyword}]
         md_metadata_dict["dcat:Dataset"]["dcat:keyword"] = keywords_list
 
-        # landing page
-        md_metadata_dict["dcat:Dataset"]["dcat:landingPage"] = package_url
-
-        # Distribution - iterate through package resources (MANDATORY)
-        # and obtain package license
+        # Distribution - iterate through package resources and obtain package license (MANDATORY)
         # Call get_distribution_list(package) to get distibution list
-        md_metadata_dict["dcat:Dataset"]["dcat:distribution"] = get_distribution_list(
-            package, package_name
-        )
+        md_metadata_dict["dcat:Dataset"]["dcat:distribution"] = get_distribution_list(package, package_name)
 
         return md_metadata_dict
 
@@ -455,6 +447,7 @@ def envidat_to_opendataswiss_converter() -> str:
 
     converted_packages = []
 
+    # TODO remove sort_result, let it use default value of None
     metadata_list = get_metadata_list_with_resources(sort_result=True)
 
     # Try to convert packages to dictionaries compatible with OpenDataSwiss format
@@ -482,7 +475,7 @@ def envidat_to_opendataswiss_converter() -> str:
 
 
 def main():
-    "Main script logic."
+    """Main script logic."""
 
     if _debugger_is_active():
         _load_debug_dotenv()
