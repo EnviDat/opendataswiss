@@ -147,7 +147,7 @@ def get_metadata_list_with_resources(
     :param host: API host url. Attempts to get from environment if omitted.
     :param sort_result: Sort result alphabetically by metadata name.
 
-    Note: uses limit 10000, otherwise returns only 100 results.
+    Note: uses limit 100000, otherwise returns only 10 results.
     """
 
     if host is None:

@@ -23,7 +23,7 @@ set-vars:
 image-build:
   stage: build
   image:
-    name: gcr.io/kaniko-project/executor:debug
+    name: gcr.io/kaniko-project/executor:v1.8.1-debug
     entrypoint: [""]
   before_script:
     - >
