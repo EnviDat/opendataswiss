@@ -17,7 +17,6 @@ AWS_ENDPOINT=xxx
 AWS_REGION=xxx
 AWS_ACCESS_KEY=xxx
 AWS_SECRET_KEY=xxx
-AWS_BUCKET_NAME=xxx
 ```
 
 2a. Local Debug

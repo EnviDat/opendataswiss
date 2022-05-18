@@ -1,56 +1,17 @@
-import os
-import sys
 import logging
-import requests
 import json
 
-from typing import Optional, NoReturn
-from pathlib import Path
+from typing import Optional
 from collections import OrderedDict
 from dateutil.parser import parse
 from xmltodict import unparse
 
-from utils.s3 import (
-    get_s3_connection,
-    create_s3_bucket,
-    set_s3_static_config,
-    generate_index_html,
-    upload_to_s3_from_memory,
-)
+from envidat.api.v1 import get_metadata_list_with_resources
+from envidat.s3.bucket import Bucket
+from envidat.utils import get_logger, load_dotenv_if_in_debug_mode
 
 
 log = logging.getLogger(__name__)
-
-
-def _debugger_is_active() -> bool:
-    """Check to see if running in debug mode."""
-
-    gettrace = getattr(sys, "gettrace", lambda: None)
-    return gettrace() is not None
-
-
-def _load_debug_dotenv() -> NoReturn:
-    """Load .env.secret variables from repo for debugging."""
-
-    from dotenv import load_dotenv
-
-    secret_env = Path(".env.secret")
-    if secret_env.is_file():
-        load_dotenv(secret_env)
-
-
-def _get_logger() -> logging.basicConfig:
-    """Set logger parameters with log level from environment."""
-
-    logging.basicConfig(
-        level=os.getenv("LOG_LEVEL", default="DEBUG"),
-        format=(
-            "%(asctime)s.%(msecs)03d [%(levelname)s] "
-            "%(name)s | %(funcName)s:%(lineno)d | %(message)s"
-        ),
-        datefmt="%y-%m-%d %H:%M:%S",
-        stream=sys.stdout,
-    )
 
 
 def _clean_text(text: str) -> str:
@@ -77,104 +38,6 @@ def _get_keywords(package: dict) -> list:
         name = tag.get("display_name", "").upper()
         keywords += [name]
     return keywords
-
-
-def _get_url(url: str) -> requests.Response:
-    """Helper wrapper to get a URL with additional error handling."""
-
-    try:
-        log.debug(f"Attempting to get {url}")
-        r = requests.get(url)
-        r.raise_for_status()
-        return r
-    except requests.exceptions.ConnectionError as e:
-        log.error(f"Could not connect to internet on get: {r.request.url}")
-        log.error(e)
-    except requests.exceptions.HTTPError as e:
-        log.error(f"HTTP response error on get: {r.request.url}")
-        log.error(e)
-    except requests.exceptions.RequestException as e:
-        log.error(f"Request error on get: {r.request.url}")
-        log.error(f"Request: {e.request}")
-        log.error(f"Response: {e.response}")
-    except Exception as e:
-        log.error(e)
-        log.error(f"Unhandled exception occured on get: {r.request.url}")
-
-    return None
-
-
-def get_metadata_list(host: str = None, sort_result: bool = None) -> list:
-    """
-    Get package/metadata list from API.
-    Host url as a parameter or from environment.
-
-    :param host: API host url. Attempts to get from environment if omitted.
-    :param sort_result: Sort result alphabetically by metadata name.
-    """
-
-    if host is None:
-        host = os.getenv("API_HOST", default="https://www.envidat.ch")
-
-    log.info(f"Getting package list from {host}.")
-    try:
-        package_names = _get_url(f"{host}/api/3/action/package_list").json()
-    except AttributeError as e:
-        log.error(e)
-        log.error(f"Getting package names from API failed. Returned: {package_names}")
-        raise AttributeError("Failed to extract package names as JSON.")
-
-    log.debug("Extracting [result] key from JSON.")
-    package_names = list(package_names["result"])
-
-    log.info(f"Returned {len(package_names)} metadata entries from API.")
-
-    if sort_result:
-        log.debug("Sorting return alphabetically.")
-        package_names = sorted(package_names, reverse=False)
-
-    return package_names
-
-
-def get_metadata_list_with_resources(host: str = None, sort_result: bool = None) -> list:
-    """
-    Get package/metadata list with associated resources from API.
-    Host url as a parameter or from environment.
-
-    :param host: API host url. Attempts to get from environment if omitted.
-    :param sort_result: Sort result alphabetically by metadata name.
-
-    Note: uses limit 100000, otherwise returns only 10 results.
-    """
-
-    if host is None:
-        host = os.getenv("API_HOST", default="https://www.envidat.ch")
-
-    log.info(f"Getting package list with resources from {host}.")
-    try:
-        package_names_with_resources = _get_url(
-            f"{host}/api/3/action/current_package_list_with_resources?limit=100000"
-        ).json()
-    except AttributeError as e:
-        log.error(e)
-        log.error(
-            "Getting package names with resources from API failed. "
-            f"Returned: {package_names_with_resources}"
-        )
-        raise AttributeError("Failed to extract package names as JSON.")
-
-    log.debug("Extracting [result] key from JSON.")
-    package_names_with_resources = list(package_names_with_resources["result"])
-
-    log.info(f"Returned {len(package_names_with_resources)} metadata entries from API.")
-
-    if sort_result:
-        log.debug("Sorting return by nested 'name' key alphabetically.")
-        package_names_with_resources = sorted(
-            package_names_with_resources, key=lambda x: x["name"], reverse=False
-        )
-
-    return package_names_with_resources
 
 
 def get_distribution_list(package: dict, package_name: str) -> list:
@@ -292,7 +155,10 @@ def get_distribution_list(package: dict, package_name: str) -> list:
 
 
 def get_wrapper_dict(converted_packages: list) -> dict:
-    """Returns wrapper dictionary (with catalog and root tags) for converted packages."""
+    """
+    Returns wrapper dictionary (with catalog and root tags)
+    for converted packages.
+    """
 
     # Assign catalog_dict for header and converted_packages
     catalog_dict = OrderedDict()
@@ -369,12 +235,16 @@ def get_opendataswiss_ordered_dict(package: dict) -> Optional[OrderedDict]:
             "publisher", ""
         )
         md_metadata_dict["dcat:Dataset"]["dct:publisher"] = {
-            "foaf:Organization": {"@rdf:about": "https://envidat.ch/#/about",
-                                  "foaf:name": publisher_name}
+            "foaf:Organization": {
+                "@rdf:about": "https://envidat.ch/#/about",
+                "foaf:name": publisher_name,
+            }
         }
 
         # landing page
-        md_metadata_dict["dcat:Dataset"]["dcat:landingPage"] = {"@rdf:resource": package_url}
+        md_metadata_dict["dcat:Dataset"]["dcat:landingPage"] = {
+            "@rdf:resource": package_url
+        }
 
         # contact point (MANDATORY)
         maintainer = json.loads(package.get("maintainer", "{}"))
@@ -423,9 +293,12 @@ def get_opendataswiss_ordered_dict(package: dict) -> Optional[OrderedDict]:
             keywords_list += [{"@xml:lang": "en", "#text": keyword}]
         md_metadata_dict["dcat:Dataset"]["dcat:keyword"] = keywords_list
 
-        # Distribution - iterate through package resources and obtain package license (MANDATORY)
+        # Distribution - iterate through package resources and obtain
+        # package license (MANDATORY)
         # Call get_distribution_list(package) to get distibution list
-        md_metadata_dict["dcat:Dataset"]["dcat:distribution"] = get_distribution_list(package, package_name)
+        md_metadata_dict["dcat:Dataset"]["dcat:distribution"] = get_distribution_list(
+            package, package_name
+        )
 
         return md_metadata_dict
 
@@ -447,8 +320,7 @@ def envidat_to_opendataswiss_converter() -> str:
 
     converted_packages = []
 
-    # TODO remove sort_result, let it use default value of None
-    metadata_list = get_metadata_list_with_resources(sort_result=True)
+    metadata_list = get_metadata_list_with_resources()
 
     # Try to convert packages to dictionaries compatible with OpenDataSwiss format
     try:
@@ -477,25 +349,21 @@ def envidat_to_opendataswiss_converter() -> str:
 def main():
     """Main script logic."""
 
-    if _debugger_is_active():
-        _load_debug_dotenv()
-    _get_logger()
+    load_dotenv_if_in_debug_mode(env_file=".env.secret")
+    get_logger()
+
+    log.info("Starting main opendataswiss script.")
 
     xml_data = envidat_to_opendataswiss_converter()
     xml_name = "envidat_export_opendataswiss.xml"
 
-    s3_client = get_s3_connection()
-    bucket = create_s3_bucket(s3_client, public=True)
+    s3_bucket = Bucket(bucket_name="opendataswiss", is_new=True, is_public=True)
+    s3_bucket.put(xml_name, xml_data)
 
-    log.debug(f"Attempting upload of {xml_name} to S3 bucket.")
-    upload_to_s3_from_memory(bucket, xml_name, xml_data)
+    s3_bucket.configure_static_website()
+    s3_bucket.generate_index_html("EnviDat OpenDataSwiss XML", xml_name)
 
-    set_s3_static_config(s3_client)
-    index_html = generate_index_html("OpenDataSwiss XML", xml_name)
-    log.debug("Attempting upload of index.html to S3 bucket.")
-    upload_to_s3_from_memory(bucket, "index.html", index_html, content_type="text/html")
-
-    log.info("Done.")
+    log.info("Finished main opendataswiss script.")
 
 
 if __name__ == "__main__":

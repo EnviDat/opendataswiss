@@ -72,7 +72,7 @@ COPY --from=build \
     /opt/python/pkgs
 ENV PYTHONPATH="/opt/python/pkgs"
 WORKDIR /opt/app
-COPY main.py utils ./
+COPY main.py ./
 
 # Upgrade pip & pre-compile deps to .pyc, add appuser, permissions
 RUN python -m pip install --no-cache-dir --upgrade pip \

@@ -1,17 +1,17 @@
 [[package]]
 name = "boto3"
-version = "1.22.12"
+version = "1.23.2"
 requires_python = ">= 3.6"
 summary = "The AWS SDK for Python"
 dependencies = [
-    "botocore<1.26.0,>=1.25.12",
+    "botocore<1.27.0,>=1.26.2",
     "jmespath<2.0.0,>=0.7.1",
     "s3transfer<0.6.0,>=0.5.0",
 ]
 
 [[package]]
 name = "botocore"
-version = "1.25.12"
+version = "1.26.2"
 requires_python = ">= 3.6"
 summary = "Low-level, data-driven core of boto 3."
 dependencies = [
@@ -30,6 +30,27 @@ name = "charset-normalizer"
 version = "2.0.12"
 requires_python = ">=3.5.0"
 summary = "The Real First Universal Charset Detector. Open, modern and actively maintained alternative to Chardet."
+
+[[package]]
+name = "envidat-utils"
+version = "0.2.1"
+requires_python = ">=3.9"
+summary = "Utilities in Python for the WSL EnviDat project."
+dependencies = [
+    "boto3>=1.22.12",
+    "requests==2.27.1",
+]
+
+[[package]]
+name = "envidat-utils"
+version = "0.2.0"
+extras = ["dotenv"]
+requires_python = ">=3.9"
+summary = "Utilities in Python for the WSL EnviDat project."
+dependencies = [
+    "envidat-utils>=0.2.0",
+    "python-dotenv>=0.20.0",
+]
 
 [[package]]
 name = "idna"
@@ -99,15 +120,16 @@ summary = "Makes working with XML feel like you are working with JSON"
 
 [metadata]
 lock_version = "3.1"
-content_hash = "sha256:30fb3c469b3a614aeaf3250b26ec0ed7ee4661c0e389d62ed676a477ec97429b"
+content_hash = "sha256:9576349b6caaa6226266cdd2dc10a43c4c2662643dfbe55b889edf668cc0b09a"
 
 [metadata.files]
-"boto3 1.22.12" = [
-    {file = "boto3-1.22.12-py3-none-any.whl", hash = "sha256:9830d7f8748c164a3f0929d8a0c5bb313cc62d7cf69ce55617108bed451a8520"},
-    {file = "boto3-1.22.12.tar.gz", hash = "sha256:4b3a49abf7a5f7cdd82714a3ae356a9a8ce12a668e014c5fc68454aa1e2fc0cb"},
+"boto3 1.23.2" = [
+    {file = "boto3-1.23.2-py3-none-any.whl", hash = "sha256:7889c3a07171b8a43468a8644d7c95948dc9e1389c4aac2b689a428ee1a98300"},
+    {file = "boto3-1.23.2.tar.gz", hash = "sha256:4408cf07340d29d7a9c8d32cf71b1c54f86b768b2145d341d2698c1e467d7d32"},
 ]
-"botocore 1.25.12" = [
-    {file = "botocore-1.25.12-py3-none-any.whl", hash = "sha256:53e19890124be45e47ec4f7ffdaf587343d375dbd7c7a501e55aeff80680fec0"},
+"botocore 1.26.2" = [
+    {file = "botocore-1.26.2-py3-none-any.whl", hash = "sha256:1977f2ad6b6263f4dd9e8b784e69b194988f16d6bd90c4eede15964f4eecf878"},
+    {file = "botocore-1.26.2.tar.gz", hash = "sha256:16b9d523a19d61b0edc80ef2253f9130165bad473b1b5707027f10975a8d5467"},
 ]
 "certifi 2021.10.8" = [
     {file = "certifi-2021.10.8-py2.py3-none-any.whl", hash = "sha256:d62a0163eb4c2344ac042ab2bdf75399a71a2d8c7d47eac2e2ee91b9d6339569"},
@@ -116,6 +138,14 @@ content_hash = "sha256:30fb3c469b3a614aeaf3250b26ec0ed7ee4661c0e389d62ed676a477e
 "charset-normalizer 2.0.12" = [
     {file = "charset_normalizer-2.0.12-py3-none-any.whl", hash = "sha256:6881edbebdb17b39b4eaaa821b438bf6eddffb4468cf344f09f89def34a8b1df"},
     {file = "charset-normalizer-2.0.12.tar.gz", hash = "sha256:2857e29ff0d34db842cd7ca3230549d1a697f96ee6d3fb071cfa6c7393832597"},
+]
+"envidat-utils 0.2.1" = [
+    {file = "envidat_utils-0.2.1-py3-none-any.whl", hash = "sha256:79b892e56174a1971a3d6798a082c19a8fa3767401518a9862e5e3f9115a67a2"},
+    {file = "envidat-utils-0.2.1.tar.gz", hash = "sha256:a1c4f894eeb22ddf263dcd98612dee203b2402eb06f129dd0a3086699b588741"},
+]
+"envidat-utils 0.2.0" = [
+    {file = "envidat_utils-0.2.0-py3-none-any.whl", hash = "sha256:b490bae59403cc95ef2d85d4e4d7bc1c9e613090fb0e981bff0b5631e39e8d9b"},
+    {file = "envidat-utils-0.2.0.tar.gz", hash = "sha256:dd42a36407153580b0181f4ba839435634ab11fffccaa1f7d560c638fe3ecd5e"},
 ]
 "idna 3.3" = [
     {file = "idna-3.3-py3-none-any.whl", hash = "sha256:84d9dd047ffa80596e0f246e2eab0b391788b0503584e8945f2368256d2735ff"},

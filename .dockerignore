@@ -3,7 +3,5 @@
 
 # Allow files and directories
 !*.py
-!utils/**/*.py
 !pyproject.toml
 !pdm.lock
-!__pypackages__/
