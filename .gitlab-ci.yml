@@ -29,7 +29,6 @@ image-build:
     - >
       echo "${IMAGE_REGISTRY_CA_CERT}"
       | base64 -d >> /kaniko/ssl/certs/ca-certificates.crt
-    - mkdir -p /kaniko/.docker
     - >
       echo "{\"auths\":{\"${INTERNAL_REG}\":{\"auth\":\"$(printf
       "%s:%s" "${IMAGE_REGISTRY_USER}" "${IMAGE_REGISTRY_PASS}"
