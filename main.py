@@ -134,8 +134,7 @@ def get_distribution_list(package: dict, package_name: str) -> list:
                 },
                 "dct:language": "en",
                 "dcat:accessURL": {
-                    "@rdf:datatype": "http://www.w3.org/2001/XMLSchema#anyURI",
-                    "#text": resource_page_url,
+                    "@rdf:resource": resource_page_url,
                 },
                 "dct:rights": resource_license,
                 "dcat:byteSize": resource_size,
