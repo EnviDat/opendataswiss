@@ -355,7 +355,7 @@ def main():
     log.info("Starting main opendataswiss script.")
 
     xml_data = envidat_to_opendataswiss_converter()
-    xml_name = "envidat_export_opendataswiss.xml"
+    xml_name = "dcat-ap-ch.xml"
 
     s3_bucket = Bucket(bucket_name="opendataswiss", is_new=True, is_public=True)
     s3_bucket.put(xml_name, xml_data)
