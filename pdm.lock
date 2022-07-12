@@ -1,18 +1,18 @@
 [[package]]
 name = "boto3"
 version = "1.23.3"
-requires_python = ">= 3.6"
+requires_python = ">= 3.7"
 summary = "The AWS SDK for Python"
 dependencies = [
-    "botocore<1.27.0,>=1.26.3",
+    "botocore<1.28.0,>=1.27.27",
     "jmespath<2.0.0,>=0.7.1",
-    "s3transfer<0.6.0,>=0.5.0",
+    "s3transfer<0.7.0,>=0.6.0",
 ]
 
 [[package]]
 name = "botocore"
-version = "1.26.3"
-requires_python = ">= 3.6"
+version = "1.27.27"
+requires_python = ">= 3.7"
 summary = "Low-level, data-driven core of boto 3."
 dependencies = [
     "jmespath<2.0.0,>=0.7.1",
@@ -23,33 +23,33 @@ dependencies = [
 [[package]]
 name = "certifi"
 version = "2022.5.18"
-requires_python = ">=3.5"
+requires_python = ">=3.6"
 summary = "Python package for providing Mozilla's CA Bundle."
 
 [[package]]
 name = "charset-normalizer"
 version = "2.0.12"
-requires_python = ">=3.5.0"
+requires_python = ">=3.6.0"
 summary = "The Real First Universal Charset Detector. Open, modern and actively maintained alternative to Chardet."
 
 [[package]]
 name = "envidat-utils"
-version = "0.3.1"
+version = "1.0.3"
 requires_python = ">=3.9"
 summary = "Utilities in Python for the WSL EnviDat project."
 dependencies = [
     "boto3>=1.22.12",
-    "requests==2.27.1",
+    "requests>=2.27.1",
 ]
 
 [[package]]
 name = "envidat-utils"
-version = "0.3.1"
+version = "1.0.3"
 extras = ["dotenv"]
 requires_python = ">=3.9"
 summary = "Utilities in Python for the WSL EnviDat project."
 dependencies = [
-    "envidat-utils",
+    "envidat-utils==1.0.3",
     "python-dotenv>=0.20.0",
 ]
 
@@ -83,19 +83,19 @@ summary = "Read key-value pairs from a .env file and set them as environment var
 [[package]]
 name = "requests"
 version = "2.27.1"
-requires_python = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*"
+requires_python = ">=3.7, <4"
 summary = "Python HTTP for Humans."
 dependencies = [
     "certifi>=2017.4.17",
-    "charset-normalizer~=2.0.0; python_version >= \"3\"",
-    "idna<4,>=2.5; python_version >= \"3\"",
+    "charset-normalizer<3,>=2",
+    "idna<4,>=2.5",
     "urllib3<1.27,>=1.21.1",
 ]
 
 [[package]]
 name = "s3transfer"
-version = "0.5.2"
-requires_python = ">= 3.6"
+version = "0.6.0"
+requires_python = ">= 3.7"
 summary = "An Amazon S3 Transfer Manager"
 dependencies = [
     "botocore<2.0a.0,>=1.12.36",
@@ -110,7 +110,7 @@ summary = "Python 2 and 3 compatibility utilities"
 [[package]]
 name = "urllib3"
 version = "1.26.9"
-requires_python = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, <4"
+requires_python = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*, <4"
 summary = "HTTP library with thread-safe connection pooling, file post, and more."
 
 [[package]]
@@ -121,16 +121,16 @@ summary = "Makes working with XML feel like you are working with JSON"
 
 [metadata]
 lock_version = "3.1"
-content_hash = "sha256:710d8c8d4d3f7a1628ed839a4e3ef727691e51a5c56980c773d73aa7ecbd4123"
+content_hash = "sha256:fb85888a621d55b1228434f6a67189b1977daaa08fbd6b86a28d9f47c95c644c"
 
 [metadata.files]
 "boto3 1.23.3" = [
     {file = "boto3-1.23.3-py3-none-any.whl", hash = "sha256:5f27eec9b0a43edbfb3ed5e748837b10219a972f0728fecd78f84ec3629f2092"},
     {file = "boto3-1.23.3.tar.gz", hash = "sha256:9d5ce5ae3ddd4429cf752efe7c9f39691db6c85b6b5f1cfc8861b8f23b72b67a"},
 ]
-"botocore 1.26.3" = [
-    {file = "botocore-1.26.3-py3-none-any.whl", hash = "sha256:869308e29c1e8a9baa3e2fc336a1293e098855e34ea77c035dc4194a96316688"},
-    {file = "botocore-1.26.3.tar.gz", hash = "sha256:f83c5cd7b3e1889aabf2fcf7926ddafc41f249a29f76f37cdb9e8680ac9b5af4"},
+"botocore 1.27.27" = [
+    {file = "botocore-1.27.27-py3-none-any.whl", hash = "sha256:524da451350c41e3136353183e7424c95952124163ea8ec03f57f29597bbcb4b"},
+    {file = "botocore-1.27.27.tar.gz", hash = "sha256:583b85f8a799fb89d1a762db041163b5848b08e79cee06b609bcaaeb69ea1fa6"},
 ]
 "certifi 2022.5.18" = [
     {file = "certifi-2022.5.18-py3-none-any.whl", hash = "sha256:8d15a5a7fde18536a249c49e07e8e462b8fc13de21b3c80e8a68315dfa227c99"},
@@ -140,9 +140,9 @@ content_hash = "sha256:710d8c8d4d3f7a1628ed839a4e3ef727691e51a5c56980c773d73aa7e
     {file = "charset_normalizer-2.0.12-py3-none-any.whl", hash = "sha256:6881edbebdb17b39b4eaaa821b438bf6eddffb4468cf344f09f89def34a8b1df"},
     {file = "charset-normalizer-2.0.12.tar.gz", hash = "sha256:2857e29ff0d34db842cd7ca3230549d1a697f96ee6d3fb071cfa6c7393832597"},
 ]
-"envidat-utils 0.3.1" = [
-    {file = "envidat_utils-0.3.1-py3-none-any.whl", hash = "sha256:0747e35740c4ea98c8c4328cade3600ab6efbe353b197e6a3055577948db05e2"},
-    {file = "envidat-utils-0.3.1.tar.gz", hash = "sha256:d365b3f32eead6da179389059d21b5a71eef45ff56cb100fb7d2f76b5448968f"},
+"envidat-utils 1.0.3" = [
+    {file = "envidat_utils-1.0.3-py3-none-any.whl", hash = "sha256:019659e1aad00c9223d1c7debdb5fa101eff5151dd1272891538e5551a6a646c"},
+    {file = "envidat-utils-1.0.3.tar.gz", hash = "sha256:5a78141ed8e48f2c0da699f2384700d2fc2f98939ad607019b6b40ee4194f34c"},
 ]
 "idna 3.3" = [
     {file = "idna-3.3-py3-none-any.whl", hash = "sha256:84d9dd047ffa80596e0f246e2eab0b391788b0503584e8945f2368256d2735ff"},
@@ -164,9 +164,9 @@ content_hash = "sha256:710d8c8d4d3f7a1628ed839a4e3ef727691e51a5c56980c773d73aa7e
     {file = "requests-2.27.1-py2.py3-none-any.whl", hash = "sha256:f22fa1e554c9ddfd16e6e41ac79759e17be9e492b3587efa038054674760e72d"},
     {file = "requests-2.27.1.tar.gz", hash = "sha256:68d7c56fd5a8999887728ef304a6d12edc7be74f1cfa47714fc8b414525c9a61"},
 ]
-"s3transfer 0.5.2" = [
-    {file = "s3transfer-0.5.2-py3-none-any.whl", hash = "sha256:7a6f4c4d1fdb9a2b640244008e142cbc2cd3ae34b386584ef044dd0f27101971"},
-    {file = "s3transfer-0.5.2.tar.gz", hash = "sha256:95c58c194ce657a5f4fb0b9e60a84968c808888aed628cd98ab8771fe1db98ed"},
+"s3transfer 0.6.0" = [
+    {file = "s3transfer-0.6.0-py3-none-any.whl", hash = "sha256:06176b74f3a15f61f1b4f25a1fc29a4429040b7647133a463da8fa5bd28d5ecd"},
+    {file = "s3transfer-0.6.0.tar.gz", hash = "sha256:2ed07d3866f523cc561bf4a00fc5535827981b117dd7876f036b0c1aca42c947"},
 ]
 "six 1.16.0" = [
     {file = "six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},

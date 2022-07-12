@@ -7,7 +7,7 @@ authors = [
     {name= "Rebecca Kurup Buchholz", email = "None"}
 ]
 dependencies = [
-    "envidat-utils[dotenv]>=0.3.1",
+    "envidat-utils[dotenv]==1.0.3",
     "xmltodict>=0.13.0",
     "python-dateutil>=2.8.2",
 ]
