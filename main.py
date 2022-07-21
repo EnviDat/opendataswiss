@@ -230,13 +230,10 @@ def get_opendataswiss_ordered_dict(package: dict) -> Optional[OrderedDict]:
             }
 
         # publication (MANDATORY)
-        publisher_name = json.loads(package.get("publication", "{}")).get(
-            "publisher", ""
-        )
         md_metadata_dict["dcat:Dataset"]["dct:publisher"] = {
             "foaf:Organization": {
                 "@rdf:about": "https://envidat.ch/#/about",
-                "foaf:name": publisher_name,
+                "foaf:name": "EnviDat",
             }
         }
 
