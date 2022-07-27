@@ -84,11 +84,11 @@ RUN python -m pip install --no-cache-dir --upgrade pip \
 
 
 FROM runtime as debug
-COPY pyproject.toml pdm.lock /opt/python/
 WORKDIR /opt/python
+COPY pyproject.toml pdm.lock ./
 RUN pip install --no-cache-dir pdm==2.0.2 \
     && pdm config python.use_venv false \
-    && pdm install --dev --no-default --no-editable
+    && pdm export --dev --no-default | pip install -r /dev/stdin
 WORKDIR /opt/app
 USER appuser
 ENTRYPOINT ["python", "-m", "debugpy", "--wait-for-client", "--listen", "0.0.0.0:5678"]
