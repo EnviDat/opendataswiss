@@ -5,3 +5,4 @@
 !*.py
 !pyproject.toml
 !pdm.lock
+!__version__.py
