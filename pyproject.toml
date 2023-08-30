@@ -7,9 +7,9 @@ authors = [
     {name= "Rebecca Kurup Buchholz", email = "None"}
 ]
 dependencies = [
-    "envidat-utils[dotenv]>=1.2.4",
+    "envidat-utils[dotenv]>=1.4.3",
 ]
-requires-python = ">=3.9"
+requires-python = ">=3.9,<3.11"
 license = {text = "MIT"}
 
 [tool.pdm]
