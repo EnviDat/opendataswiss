@@ -56,7 +56,7 @@ WORKDIR /opt/python
 COPY pyproject.toml pdm.lock /opt/python/
 COPY __version__.py /opt/python/
 RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir pdm==2.0.2 \
+    && pip install --no-cache-dir pdm==2.8.2 \
     && pdm config python.use_venv false
 RUN pdm install --prod --no-editable
 
@@ -95,7 +95,7 @@ FROM runtime as debug
 WORKDIR /opt/python
 COPY pyproject.toml pdm.lock ./
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-RUN pip install --no-cache-dir pdm==2.0.2 \
+RUN pip install --no-cache-dir pdm==2.8.2 \
     && pdm config python.use_venv false \
     && pdm export --dev --no-default | \
     pip install --no-cache-dir -r /dev/stdin
